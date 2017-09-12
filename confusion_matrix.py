@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -45,7 +46,7 @@ y_truth = np.loadtxt('truth_labels.txt')
 y_pred = np.loadtxt('pred_labels.txt')
 
 # Compute confusion matrix.
-t = confusion_matrix(y_truth, y_pred)
+cmat = confusion_matrix(y_truth, y_pred)
 print(cmat)
 
 # Name of the classes in data.

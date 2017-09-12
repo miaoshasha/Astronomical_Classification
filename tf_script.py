@@ -126,8 +126,9 @@ x_input = tf.reshape(x, [-1, train_image_size])
 
 #dense 1
 h_fc1 = tf.nn.relu(tf.matmul(x_input, W_fc1) + b_fc1)
+dropout = tf.layers.dropout(h_fc1, rate=0.5)
 #dense 2
-y_conv = tf.matmul(h_fc1, W_fc2) + b_fc2
+y_conv = tf.matmul(dropout, W_fc2) + b_fc2
 
 
 #graph construction done
@@ -198,3 +199,5 @@ if FLAGS.trace_flag:
     trace = timeline.Timeline(step_stats=run_metadata.step_stats)
     trace_file.write(trace.generate_chrome_trace_format())
     trace_file.close()
+    
+print ("printing weights, 64*32, 32*4: ", W_fc1, W_fc2)
