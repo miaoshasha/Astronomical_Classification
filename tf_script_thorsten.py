@@ -92,10 +92,10 @@ print("Test set size: ", test_size)
 
 
 #apply preprocessing and split in data, label, label_sdss
-#standard caler: warning the dataset has many outliers
-#scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
+#standard caler: warning the dataset has many outliers. However, works better than robust scaler
+scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
 #robust scaler, might be better
-scaler = RobustScaler(with_centering=True, with_scaling=True, quantile_range=[0.25,0.75], copy=True)
+#scaler = RobustScaler(with_centering=True, with_scaling=True, quantile_range=[0.25,0.75], copy=True)
 scaler.fit(train_df.loc[:,features])
 #train
 train_images = scaler.transform(train_df.loc[:,features].values)
