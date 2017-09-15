@@ -52,7 +52,7 @@ df = df.sample(frac=1).reset_index(drop=True)
 
 #do sme computations for obtaining sizes of test and train and validation
 #fractions:
-num_classes = int(np.max(df.iloc[:,-1]))+1
+num_classes = int(np.max(df.loc[:,"truth"]))+1
 print("We have ",num_classes," classes to predict")
 train_fraction=0.8
 validation_fraction=0.1
@@ -147,12 +147,12 @@ bn_fc1 = batch_normalization(h_fc1,[hidden_dim]) + b_fc1
 re_fc1 = tf.nn.relu(bn_fc1)
 dr_fc1 = tf.nn.dropout(re_fc1, keep_prob=keep_prob)
 #dense 2
-#h_fc2 = tf.matmul(dr_fc1, W_fc2)
-#bn_fc2 = batch_normalization(h_fc2,[hidden_dim]) + b_fc2
-#re_fc2 = tf.nn.relu(bn_fc2)
-#dr_fc2 = tf.nn.dropout(re_fc2, keep_prob=keep_prob)
+h_fc2 = tf.matmul(dr_fc1, W_fc2)
+bn_fc2 = batch_normalization(h_fc2,[hidden_dim]) + b_fc2
+re_fc2 = tf.nn.relu(bn_fc2)
+dr_fc2 = tf.nn.dropout(re_fc2, keep_prob=keep_prob)
 #output
-y_conv = tf.matmul(dr_fc1, W_fc3) + b_fc3
+y_conv = tf.matmul(dr_fc2, W_fc3) + b_fc3
 
 
 #graph construction done
