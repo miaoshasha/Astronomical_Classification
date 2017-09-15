@@ -20,8 +20,8 @@ echo "SUBMIT DIR: $SLURM_SUBMIT_DIR"
 echo "Tensorflow location"
 python -u -c "import tensorflow; print(tensorflow.__file__)"
 
-python tf_script.py --trace_flag=1 --epoch=20
+python tf_script_thorsten.py --trace_flag=1 --epoch=20
 
- python confusion_matrix.py
+#python confusion_matrix.py
 
 
