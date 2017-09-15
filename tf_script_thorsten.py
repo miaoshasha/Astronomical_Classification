@@ -11,6 +11,7 @@ from tensorflow.python.client import timeline
 import os
 import pandas as pd
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
 # In[17]:
@@ -46,25 +47,18 @@ def batch_normalization(x, shape, offset=None, name = None):
         variance = tf.Variable(tf.constant(1., shape=shape), name = name + '_var')
     return tf.nn.batch_normalization(x, mean, variance, offset=None, scale=None, variance_epsilon = 1e-6, name=name)
 
-# In[18]:
 
 # Read data from csv file.
 # Path to all data:  /global/cscratch1/sd/muszyng/data_astronomy_catalogs/trainingData.csv
+#df = pd.read_csv('debugData.csv', delimiter=" ") #np.genfromtxt('trainingData.csv', delimiter=" ")
 df = np.genfromtxt('trainingData.csv', delimiter=" ")
-#df = np.genfromtxt('debugData.csv', delimiter=" ")
 
 #initial shuffle
 perm = np.random.permutation(range(df.shape[0]))
 df = df[perm]
 
-# In[19]:
 
-print(df.shape)
-
-
-# In[20]:
-
-# Create array of labels.
+# Extract ground truth, sdss labels and features
 labels_sdss = df[:,0]
 labels = df[:,-1]
 data = df[:,1:-1]
@@ -72,32 +66,11 @@ num_classes = int(np.max(labels))+1
 print("We have ",num_classes," classes to predict")
 labels = np.reshape(labels,(labels.shape[0],1))
 labels_sdss = np.reshape(labels_sdss,(labels_sdss.shape[0],1))
-#print(labels)
 
 
-# In[21]:
+#number of features
+train_image_size = data.shape[1] 
 
-# Create binary matrix of labels.
-#nb_classes = 4
-#mat_labels = np.zeros([nb_classes, len(labels)], dtype=int)
-#print(mat_labels)
-
-
-# In[22]:
-
-# Convert labels to binary matrix.
-#for i in range(0, len(labels)):
-#    l = int(labels[i])
-#    mat_labels[l, i] = 1
-#print(mat_labels)
-
-# In[29]:
-
-train_image_size = data.shape[1] #input size 
-channel = 1
-#num_classes = 3
-#image_data =  tf.convert_to_tensor(df,dtype=tf.float32)
-#labels_one_hot = np.transpose(mat_labels, [1,0])
 
 #fractions:
 train_fraction=0.8
@@ -108,17 +81,19 @@ validation_size = int(data.shape[0]*validation_fraction)
 print("Size of Training set:",train_size)
 print("Size of Validation set:",validation_size)
 print("Size of Test set:",data.shape[0]-(train_size+validation_size))
-#split the set
+#split the set and apply preprocessing
+scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
+scaler.fit(data[:train_size])
 #train
-train_images = data[:train_size]
+train_images = scaler.transform(data[:train_size])
 train_labels = labels[:train_size]
 train_labels_sdss = labels_sdss[:train_size]
 #validation
-validation_images = data[train_size:train_size+validation_size]
+validation_images = scaler.transform(data[train_size:train_size+validation_size])
 validation_labels = labels[train_size:train_size+validation_size]
 validation_labels_sdss = labels_sdss[train_size:train_size+validation_size]
 #test
-test_images = data[train_size+validation_size:]
+test_images = scaler.transform(data[train_size+validation_size:])
 test_labels = labels[train_size+validation_size:]
 test_labels_sdss = labels_sdss[train_size+validation_size:]
 
@@ -133,8 +108,6 @@ tf.app.flags.DEFINE_integer('epoch', 10, """Epochs to train the model.""")
 x_train = train_images
 y_train = train_labels
 
-
-# In[9]:
 
 #init placeholders
 x = tf.placeholder(tf.float32, shape = [None, train_image_size]) #change this to the vector shape
