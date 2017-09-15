@@ -91,6 +91,24 @@ print("Validation set size: ", validation_size)
 print("Test set size: ", test_size)
 
 
+#on the training set, clean up the outliers: for doing so, compute the deviation from the median and the 3rd quantile range, per class and feature
+clean_data = True
+if clean_data:
+    groups = train_df[features+['truth']].groupby("truth")
+    #compute lower quantile to cut out the ridiculous -9999.0:
+    #mediandf = pd.DataFrame(groups.apply(lambda x: x[features].median())).reset_index()
+    loquantiledf = pd.DataFrame(groups.apply(lambda x: x[features].quantile(0.2))).reset_index()
+    loquantiledf.rename(columns={x:x+'_loq' for x in features},inplace=True)
+    #hiquantiledf = pd.DataFrame(groups.apply(lambda x: x[features].quantile(1.))).reset_index()
+    train_df=train_df.merge(loquantiledf, on='truth', how='left')
+    validation_df=validation_df.merge(loquantiledf, on='truth', how='left')
+    test_df=test_df.merge(loquantiledf, on='truth', how='left')
+    for feature in features:
+        train_df.loc[train_df[feature] < train_df[feature+'_loq'], feature] = train_df[feature+'_loq']
+        validation_df.loc[validation_df[feature] < validation_df[feature+'_loq'], feature] = validation_df[feature+'_loq']
+        test_df.loc[test_df[feature] < test_df[feature+'_loq'], feature] = test_df[feature+'_loq']
+
+
 #apply preprocessing and split in data, label, label_sdss
 #standard caler: warning the dataset has many outliers. However, works better than robust scaler
 scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
