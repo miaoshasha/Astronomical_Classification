@@ -80,7 +80,7 @@ print(mat_labels)
 train_image_size = df.shape[1] #input size 
 channel = 1
 num_classes = 4
-image_data = df
+image_data =  tf.convert_to_tensor(df)
 labels_one_hot = np.transpose(mat_labels, [1,0])
 
 train_size = 2100000 #number of samples for training= total number of samples-test samples 
