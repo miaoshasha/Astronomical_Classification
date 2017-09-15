@@ -150,7 +150,7 @@ keep_prob = tf.placeholder(tf.float32)
 
 #variables
 hidden_dim1 = 62
-hidden_dim2 = 32
+hidden_dim2 = 62
 #62-32-16-3
 W_fc1 = weight_variable([num_features, hidden_dim1],name="W_fc1")
 b_fc1 = bias_variable([hidden_dim1],name="b_fc1")
@@ -252,7 +252,10 @@ with tf.Session() as sess:
     sess.run(sdss_accuracy[1], feed_dict={y: validation_labels, y_sdss: validation_labels_sdss})
     acc_sdss = sess.run(sdss_accuracy[0])
     print( "Final Validation accuracy SDSS: ", acc_sdss)
-    
+    #print ("printing weights, 62*62, first layer ")
+    #tf.print(W_fc1, [W_fc1])
+    #print ("printing weights, 62*62, first layer ")
+    #tf.print(W_fc2, [W_fc2])
     
     #wrap-up
     #print("Test Accuracy: \n")
@@ -283,4 +286,4 @@ if FLAGS.trace_flag:
     trace_file.write(trace.generate_chrome_trace_format())
     trace_file.close()
     
-print ("printing weights, 64*32, 32*4: ", W_fc1, W_fc2)
+print ("printing weights, 62*62, 62*62: ", W_fc1, W_fc2)
