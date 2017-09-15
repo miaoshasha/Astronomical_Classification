@@ -1,7 +1,4 @@
-
 # coding: utf-8
-
-# In[16]:
 
 from __future__ import print_function
 import numpy as np
@@ -11,10 +8,9 @@ from tensorflow.python.client import timeline
 import os
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 import matplotlib.pyplot as plt
 
-# In[17]:
 
 #shape argument is optional
 def weight_variable(shape,name=None):
@@ -50,54 +46,73 @@ def batch_normalization(x, shape, offset=None, name = None):
 
 # Read data from csv file.
 # Path to all data:  /global/cscratch1/sd/muszyng/data_astronomy_catalogs/trainingData.csv
-#df = pd.read_csv('debugData.csv', delimiter=" ") #np.genfromtxt('trainingData.csv', delimiter=" ")
-df = np.genfromtxt('trainingData.csv', delimiter=" ")
-
+df = pd.read_csv('trainingData.csv', delimiter=" ", header=0) #np.genfromtxt('trainingData.csv', delimiter=" ")
 #initial shuffle
-perm = np.random.permutation(range(df.shape[0]))
-df = df[perm]
+df = df.sample(frac=1).reset_index(drop=True)
 
-
-# Extract ground truth, sdss labels and features
-labels_sdss = df[:,0]
-labels = df[:,-1]
-data = df[:,1:-1]
-num_classes = int(np.max(labels))+1
-print("We have ",num_classes," classes to predict")
-labels = np.reshape(labels,(labels.shape[0],1))
-labels_sdss = np.reshape(labels_sdss,(labels_sdss.shape[0],1))
-
-
-#number of features
-train_image_size = data.shape[1] 
-
-
+#do sme computations for obtaining sizes of test and train and validation
 #fractions:
+num_classes = int(np.max(df.iloc[:,-1]))+1
+print("We have ",num_classes," classes to predict")
 train_fraction=0.8
 validation_fraction=0.1
-#training and validation sizes
-train_size = int(data.shape[0]*train_fraction)
-validation_size = int(data.shape[0]*validation_fraction)
-print("Size of Training set:",train_size)
-print("Size of Validation set:",validation_size)
-print("Size of Test set:",data.shape[0]-(train_size+validation_size))
-#split the set and apply preprocessing
-scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
-scaler.fit(data[:train_size])
-#train
-train_images = scaler.transform(data[:train_size])
-train_labels = labels[:train_size]
-train_labels_sdss = labels_sdss[:train_size]
-#validation
-validation_images = scaler.transform(data[train_size:train_size+validation_size])
-validation_labels = labels[train_size:train_size+validation_size]
-validation_labels_sdss = labels_sdss[train_size:train_size+validation_size]
-#test
-test_images = scaler.transform(data[train_size+validation_size:])
-test_labels = labels[train_size+validation_size:]
-test_labels_sdss = labels_sdss[train_size+validation_size:]
+#determine feature_list
+features=[x for x in df.columns if x not in ['type', 'truth']]
+num_features = len(features)
+print("We have the following ", num_features, " features: ",features)
+#determine frequency per group
+groups = df.groupby("truth")
+countdf = pd.DataFrame(groups.count())["type"].reset_index().rename(columns={'type':'frequency'})
+df = df.merge(countdf, on="truth", how="left")
 
-#model begins
+
+#extract the given fractions for test train and validation PER CLASS (in case we have uneven class distribution) and shuffle
+groups = df.groupby("truth")
+#training
+train_df = pd.DataFrame(groups.apply(lambda x: x.iloc[:int(x['frequency'].iloc[0]*train_fraction),:])).reset_index(drop=True)
+train_df = train_df.sample(frac=1).reset_index(drop=True)
+#del train_df['frequency']
+train_size = train_df.shape[0]
+#validation
+validation_df = pd.DataFrame(groups.apply(lambda x: x.iloc[int(x['frequency'].iloc[0]*train_fraction):int(x['frequency'].iloc[0]*train_fraction)+int(x['frequency'].iloc[0]*validation_fraction),:])).reset_index(drop=True)
+validation_df = validation_df.sample(frac=1).reset_index(drop=True)
+#del validation_df['frequency']
+validation_size = validation_df.shape[0]
+#test
+test_df = pd.DataFrame(groups.apply(lambda x: x.iloc[int(x['frequency'].iloc[0]*train_fraction)+int(x['frequency'].iloc[0]*validation_fraction):,:])).reset_index(drop=True)
+test_df = test_df.sample(frac=1).reset_index(drop=True)
+#del test_df['frequency']
+test_size = test_df.shape[0]
+
+
+#some informational printing
+print("Training set size: ", train_size)
+print("Validation set size: ", validation_size)
+print("Test set size: ", test_size)
+
+
+#apply preprocessing and split in data, label, label_sdss
+#standard caler: warning the dataset has many outliers
+#scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
+#robust scaler, might be better
+scaler = RobustScaler(with_centering=True, with_scaling=True, quantile_range=[0.25,0.75], copy=True)
+scaler.fit(train_df.loc[:,features])
+#train
+train_images = scaler.transform(train_df.loc[:,features].values)
+#number of features
+train_labels = np.expand_dims(train_df.loc[:,"truth"].values, axis=1).astype(np.int32)
+train_labels_sdss = np.expand_dims(train_df.loc[:,"type"].values, axis=1).astype(np.int32)
+#validation
+validation_images = scaler.transform(validation_df.loc[:,features].values)
+validation_labels = np.expand_dims(validation_df.loc[:,"truth"].values, axis=1).astype(np.int32)
+validation_labels_sdss = np.expand_dims(validation_df.loc[:,"type"].values, axis=1).astype(np.int32)
+#test
+test_images = scaler.transform(test_df.loc[:,features].values)
+test_labels = np.expand_dims(test_df.loc[:,"truth"].values, axis=1).astype(np.int32)
+test_labels_sdss = np.expand_dims(test_df.loc[:,"type"].values, axis=1).astype(np.int32)
+
+
+#start tensorflow model construction
 run_metadata = tf.RunMetadata()
 inforstring = os.getenv('inforstring')
 trace_file = open('timeline'+str(inforstring)+'.ctf.json', 'w')
@@ -110,26 +125,22 @@ y_train = train_labels
 
 
 #init placeholders
-x = tf.placeholder(tf.float32, shape = [None, train_image_size]) #change this to the vector shape
+x = tf.placeholder(tf.float32, shape = [None, num_features]) #change this to the vector shape
 y = tf.placeholder(tf.int32, shape = [None,1])
 y_sdss = tf.placeholder(tf.int32, shape = [None,1])
 keep_prob = tf.placeholder(tf.float32)
 
-
-
-#dense, initializing the variables
+#variables
 hidden_dim = 64
-W_fc1 = weight_variable([data.shape[1], hidden_dim],name="W_fc1")
+W_fc1 = weight_variable([num_features, hidden_dim],name="W_fc1")
 b_fc1 = bias_variable([hidden_dim],name="b_fc1")
 W_fc2 = weight_variable([hidden_dim, hidden_dim],name="W_fc2")
 b_fc2 = bias_variable([hidden_dim],name="b_fc2")
 W_fc3 = weight_variable([hidden_dim, num_classes],name="W_fc3")
 b_fc3 = bias_variable([num_classes],name="b_fc3")
 
-# In[12]:
-
-x_input = tf.reshape(x, [-1, train_image_size])
-
+#input layer
+x_input = tf.reshape(x, [-1, num_features])
 #dense 1
 h_fc1 = tf.matmul(x_input, W_fc1)
 bn_fc1 = batch_normalization(h_fc1,[hidden_dim]) + b_fc1
@@ -145,19 +156,19 @@ y_conv = tf.matmul(dr_fc1, W_fc3) + b_fc3
 
 
 #graph construction done
+#prediction
 predictor = tf.argmax(y_conv,1)
+#cross entropy: use sparse version so that we do not need to one-hot-encode ourselves
 cross_entropy = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(labels=y, logits=y_conv))
-#cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_conv))
+#accuracy, this is a streaming metrics, please read tensorflow.org carefully how those are used
 accuracy = tf.metrics.accuracy(labels=y[:,0], predictions=predictor, name='accuracy')
+#same for sdss, we do not need a predictor here
 sdss_accuracy = tf.metrics.accuracy(labels=y[:,0], predictions=y_sdss[:,0])
-#correct_prediction = tf.equal(tf.cast(tf.argmax(predictor,1),tf.int32), y[:,0])
-#accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-#train step
+#training step
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
 
-# In[15]:
-
+#print environment
 if (os.getenv('NUM_INTER_THREADS', None) is not None and os.getenv('NUM_INTRA_THREADS', None) is not None):
     print("Custom NERSC/Intel config:inter_op_parallelism_threads({}),""intra_op_parallelism_threads({})".format(os.environ['NUM_INTER_THREADS'],os.environ['NUM_INTRA_THREADS']))
     sess = tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=int(os.environ['NUM_INTER_THREADS']),intra_op_parallelism_threads=int(os.environ['NUM_INTRA_THREADS'])))
