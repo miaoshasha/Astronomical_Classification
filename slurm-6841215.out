@@ -1,0 +1,64 @@
+running script: tf_script_yisha.py
+#####################
+This deeplearning module will soon be deprecated - please consider using the default python module instead!
+It is accessible via "module load python/2.7-anaconda-4.4" (for python3 use python/3.6-anaconda-4.4
+The Anaconda distribution contains all the deeplearning frameworks in this module (apart from Lasagne), fully integrated with all other python modules.
+#####################
+ #1:Script starts
+SUBMIT DIR: /global/u1/y/yisha/scripts
+Tensorflow location
+/usr/common/software/python/2.7-anaconda/envs/deeplearning/lib/python2.7/site-packages/tensorflow/__init__.pyc
+2017-09-15 19:13:33.720132: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2017-09-15 19:13:33.720875: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-09-15 19:13:33.720966: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2017-09-15 19:13:33.721052: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-09-15 19:13:33.721139: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+We have  3  classes to predict
+We have the following  62  features:  ['ra', 'dec', 'psfMag_u', 'psfMagErr_u', 'psfMag_g', 'psfMagErr_g', 'psfMag_r', 'psfMagErr_r', 'psfMag_i', 'psfMagErr_i', 'psfMag_z', 'psfMagErr_z', 'modelMag_u', 'modelMagErr_u', 'modelMag_g', 'modelMagErr_g', 'modelMag_r', 'modelMagErr_r', 'modelMag_i', 'modelMagErr_i', 'modelMag_z', 'modelMagErr_z', 'petroRad_u', 'petroRadErr_u', 'petroRad_g', 'petroRadErr_g', 'petroRad_r', 'petroRadErr_r', 'petroRad_i', 'petroRadErr_i', 'petroRad_z', 'petroRadErr_z', 'q_u', 'qErr_u', 'q_g', 'qErr_g', 'q_r', 'qErr_r', 'q_i', 'qErr_i', 'q_z', 'qErr_z', 'u_u', 'uErr_u', 'u_g', 'uErr_g', 'u_r', 'uErr_r', 'u_i', 'uErr_i', 'u_z', 'uErr_z', 'mE1_u', 'mE1_g', 'mE1_r', 'mE1_i', 'mE1_z', 'mE2_u', 'mE2_g', 'mE2_r', 'mE2_i', 'mE2_z']
+Training set size:  2342365
+Validation set size:  292794
+Test set size:  292799
+max steps:  468473
+Training Loss epoch  1 :  0.26843815467
+Validation Accuracy epoch  1 :  0.923322
+Training Loss epoch  2 :  0.171505879209
+Validation Accuracy epoch  2 :  0.941867
+Training Loss epoch  3 :  0.151329917519
+Validation Accuracy epoch  3 :  0.947328
+Training Loss epoch  4 :  0.155905595654
+Validation Accuracy epoch  4 :  0.950829
+Training Loss epoch  5 :  0.141335369119
+Validation Accuracy epoch  5 :  0.955586
+Training Loss epoch  6 :  0.131678036921
+Validation Accuracy epoch  6 :  0.958589
+Training Loss epoch  7 :  0.151548888162
+Validation Accuracy epoch  7 :  0.960761
+Training Loss epoch  8 :  0.140446444789
+Validation Accuracy epoch  8 :  0.961755
+Training Loss epoch  9 :  0.145546530799
+Validation Accuracy epoch  9 :  0.962957
+Training Loss epoch  10 :  0.152934047204
+Validation Accuracy epoch  10 :  0.963534
+Training Loss epoch  11 :  0.117699279307
+Validation Accuracy epoch  11 :  0.963869
+Training Loss epoch  12 :  0.142125538035
+Validation Accuracy epoch  12 :  0.964924
+Training Loss epoch  13 :  0.135147220796
+Validation Accuracy epoch  13 :  0.965167
+Training Loss epoch  14 :  0.157582775633
+Validation Accuracy epoch  14 :  0.96615
+Training Loss epoch  15 :  0.156532767249
+Validation Accuracy epoch  15 :  0.966321
+Training Loss epoch  16 :  0.138478735552
+Validation Accuracy epoch  16 :  0.96629
+Training Loss epoch  17 :  0.158386458569
+Validation Accuracy epoch  17 :  0.966922
+Training Loss epoch  18 :  0.152333450639
+Validation Accuracy epoch  18 :  0.966628
+Training Loss epoch  19 :  0.156551727662
+Validation Accuracy epoch  19 :  0.967171
+Training Loss epoch  20 :  0.160328754222
+Validation Accuracy epoch  20 :  0.966929
+Final Validation accuracy ML:  0.966929
+Final Validation accuracy SDSS:  0.834413
+printing weights, 62*62, 62*62:  <tf.Variable 'W_fc1:0' shape=(62, 62) dtype=float32_ref> <tf.Variable 'W_fc2:0' shape=(62, 62) dtype=float32_ref>

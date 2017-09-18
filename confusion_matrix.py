@@ -42,8 +42,8 @@ def plot_confusion_matrix(cm, classes,
 
 
 # Read saved true and predicted labels.
-y_truth = np.loadtxt('truth_labels.txt') 
-y_pred = np.loadtxt('pred_labels.txt')
+y_truth = np.loadtxt('truth_labels_roc.txt') 
+y_pred = np.loadtxt('pred_labels_roc.txt')
 
 # Compute confusion matrix.
 cmat = confusion_matrix(y_truth, y_pred)

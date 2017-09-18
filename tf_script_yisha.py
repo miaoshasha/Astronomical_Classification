@@ -141,11 +141,13 @@ tf.app.flags.DEFINE_integer('epoch', 10, """Epochs to train the model.""")
 x_train = train_images
 y_train = train_labels
 
+batch_size = 100
+shape_0 = None
 
 #init placeholders
-x = tf.placeholder(tf.float32, shape = [None, num_features]) #change this to the vector shape
-y = tf.placeholder(tf.int32, shape = [None,1])
-y_sdss = tf.placeholder(tf.int32, shape = [None,1])
+x = tf.placeholder(tf.float32, shape = [shape_0, num_features]) #change this to the vector shape
+y = tf.placeholder(tf.int32, shape = [shape_0,1])
+y_sdss = tf.placeholder(tf.int32, shape = [shape_0,1])
 keep_prob = tf.placeholder(tf.float32)
 
 #variables
@@ -165,11 +167,13 @@ x_input = tf.reshape(x, [-1, num_features])
 h_fc1 = tf.matmul(x_input, W_fc1)
 bn_fc1 = batch_normalization(h_fc1,[hidden_dim1]) + b_fc1
 re_fc1 = tf.nn.relu(bn_fc1)
+#dropout 1
 dr_fc1 = tf.nn.dropout(re_fc1, keep_prob=keep_prob)
 #dense 2
 h_fc2 = tf.matmul(dr_fc1, W_fc2)
 bn_fc2 = batch_normalization(h_fc2,[hidden_dim2]) + b_fc2
 re_fc2 = tf.nn.relu(bn_fc2)
+#dropout 2
 dr_fc2 = tf.nn.dropout(re_fc2, keep_prob=keep_prob)
 #output
 y_conv = tf.matmul(dr_fc2, W_fc3) + b_fc3
@@ -247,16 +251,22 @@ with tf.Session() as sess:
             sess.run([tf.local_variables_initializer()])
             batches_ = 0
             loss_ = 0.
+    #compute gradients at the last step
+    #gradients_input = tf.gradients(cross_entropy, y_conv)[0]
+    #sess.run(gradients_input, feed_dict={y: validation_labels[:batch_size], y_sdss: validation_labels_sdss[:batch_size]})
+    #print(gradients_input)
+    #print(gradients_input.eval())
+    #np.savetxt('gradientes_wrt_input.txt',gradients_input, delimiter=',')
     
     print( "Final Validation accuracy ML: ", acc)
     sess.run(sdss_accuracy[1], feed_dict={y: validation_labels, y_sdss: validation_labels_sdss})
     acc_sdss = sess.run(sdss_accuracy[0])
     print( "Final Validation accuracy SDSS: ", acc_sdss)
-    #print ("printing weights, 62*62, first layer ")
-    #tf.print(W_fc1, [W_fc1])
-    #print ("printing weights, 62*62, first layer ")
-    #tf.print(W_fc2, [W_fc2])
-    
+    print ("printing weights, 62*3 ")
+    weights = tf.matmul(W_fc1, W_fc2)
+    weights = tf.matmul(weights, W_fc3)
+    print(weights.eval())
+    np.savetxt('weights.txt', weights.eval())
     #wrap-up
     #print("Test Accuracy: \n")
     #print("Y-labels: ",validation_labels.shape)
@@ -266,24 +276,21 @@ with tf.Session() as sess:
     #    print(sess.run(accuracy[0], feed_dict={x: validation_images, y: validation_labels, keep_prob: 1.}))
     #
     #print("Shapes:")
-    #y_pred = sess.run(predictor, feed_dict={x: validation_images, keep_prob: 1.})
-    ##print(y_pred)
+    y_pred = sess.run(predictor, feed_dict={x: validation_images, keep_prob: 1.})
+    #print(y_pred)
     #
-    #y_truth = validation_labels[:,0].astype(np.int32,copy=True)
+    y_truth = validation_labels[:,0].astype(np.int32,copy=True)
     ##print(y_truth)
     #
     ##print(y_pred.shape)
     ##print(y_truth.shape)
-    #
-    #cmat = confusion_matrix(y_truth, y_pred)
-    #print(cmat)
-    #
-    #np.savetxt('truth_labels.txt', y_truth)
-    #np.savetxt('pred_labels.txt', y_pred)
+   
+    np.savetxt('truth_labels_roc.txt', y_truth)
+    np.savetxt('pred_labels_roc.txt', y_pred)
     
 if FLAGS.trace_flag:        
     trace = timeline.Timeline(step_stats=run_metadata.step_stats)
     trace_file.write(trace.generate_chrome_trace_format())
     trace_file.close()
     
-print ("printing weights, 62*62, 62*62: ", W_fc1, W_fc2)
+#print ("printing weights, 62*62, 62*62: ", W_fc1, W_fc2)

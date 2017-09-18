@@ -11,14 +11,16 @@ n_classes = 3
 lw = 2
 
 # Read saved true and predicted labels.
-y_test = np.loadtxt('truth_labels.txt') 
-y_score = np.loadtxt('pred_labels.txt')
+y_test_t = np.loadtxt('truth_labels_roc.txt') 
+y_score_t = np.loadtxt('pred_labels_roc.txt')
 
-print(len(y_test), len(y_score))
+
 
 # Binarize the output
-y_test = label_binarize(y_test, classes=[0, 1, 2])
-y_score = label_binarize(y_score, classes=[0, 1, 2])
+#y_tmp = np.zeros()
+y_test = label_binarize(y_test_t, classes=[0, 1, 2])
+y_score = label_binarize(y_score_t, classes=[0, 1, 2])
+print(y_test, y_score)
 
 # Compute ROC curve and ROC area for each class
 fpr = dict()
@@ -27,6 +29,7 @@ roc_auc = dict()
 for i in range(n_classes):
     fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
+print(roc_auc)
 
 # Compute micro-average ROC curve and ROC area
 fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
@@ -47,6 +50,7 @@ mean_tpr /= n_classes
 
 fpr["macro"] = all_fpr
 tpr["macro"] = mean_tpr
+print(fpr, tpr)
 roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
 # Plot all ROC curves
