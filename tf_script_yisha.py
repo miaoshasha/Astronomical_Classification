@@ -7,6 +7,7 @@ import tensorflow.contrib.keras as tfk
 from tensorflow.python.client import timeline
 import os
 import pandas as pd
+import time
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import matplotlib.pyplot as plt
@@ -211,15 +212,16 @@ print("max steps: ", max_step)
 loss_ = 0.
 batches_ = 0
 epochs_ = 0
-
+loss_vec = []
 with tf.Session() as sess:
     if FLAGS.trace_flag:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()],  options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
     else:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
     for i in range(max_step):
+        iteration_start = time.time()
         #extract batches
-        if ((i+1)*batch_size)%train_size > (i*batch_size)%train_size:
+        if (i+1) % 5000 != 0:
             x_batch = x_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             y_batch = y_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             
@@ -233,14 +235,16 @@ with tf.Session() as sess:
         #compute accuracy
         else:
             epochs_ += 1
-            print( "Training Loss epoch ",epochs_, ": ", loss_/float(batches_))
+            print( "Training Loss at step", i+1, " : ", loss_/float(batches_) )
+            loss_vec.append(loss_/float(batches_))
             if FLAGS.trace_flag:
                 pred, _ = sess.run([predictor, accuracy[1]], feed_dict={x: validation_images, y: validation_labels, keep_prob: 1.}, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
                 acc = sess.run(accuracy[0], options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
             else:
                 pred, _ = sess.run([predictor, accuracy[1]], feed_dict={x: validation_images, y: validation_labels, keep_prob: 1.})
                 acc = sess.run(accuracy[0])
-            print( "Validation Accuracy epoch ",epochs_ , ": ", acc)
+            print( "Validation Accuracy at step ", i+1, " : ", acc)
+            print("Time for one iteration is " , (time.time() - iteration_start)/float(batches_))
             
             #shuffle data
             perm = np.random.permutation(range(train_size))
@@ -251,6 +255,9 @@ with tf.Session() as sess:
             sess.run([tf.local_variables_initializer()])
             batches_ = 0
             loss_ = 0.
+        print( "Final training Loss at max step: ", tmp_loss )
+        loss_vec.append(tmp_loss)
+            
     #compute gradients at the last step
     #gradients_input = tf.gradients(cross_entropy, y_conv)[0]
     #sess.run(gradients_input, feed_dict={y: validation_labels[:batch_size], y_sdss: validation_labels_sdss[:batch_size]})
@@ -265,7 +272,7 @@ with tf.Session() as sess:
     print ("printing weights, 62*3 ")
     weights = tf.matmul(W_fc1, W_fc2)
     weights = tf.matmul(weights, W_fc3)
-    print(weights.eval())
+    #print(weights.eval())
     np.savetxt('weights.txt', weights.eval())
     #wrap-up
     #print("Test Accuracy: \n")
@@ -276,10 +283,10 @@ with tf.Session() as sess:
     #    print(sess.run(accuracy[0], feed_dict={x: validation_images, y: validation_labels, keep_prob: 1.}))
     #
     #print("Shapes:")
-    y_pred = sess.run(predictor, feed_dict={x: validation_images, keep_prob: 1.})
+    y_pred, y_conv_s = sess.run([predictor, tf.nn.softmax(y_conv)], feed_dict={x: test_images, keep_prob: 1.})
     #print(y_pred)
     #
-    y_truth = validation_labels[:,0].astype(np.int32,copy=True)
+    y_truth = test_labels[:,0].astype(np.int32,copy=True)
     ##print(y_truth)
     #
     ##print(y_pred.shape)
@@ -287,6 +294,8 @@ with tf.Session() as sess:
    
     np.savetxt('truth_labels_roc.txt', y_truth)
     np.savetxt('pred_labels_roc.txt', y_pred)
+    np.savetxt('y_conv_labels_roc.txt', y_conv_s)
+    np.savetxt('loss_vec_roc.txt', loss_vec)
     
 if FLAGS.trace_flag:        
     trace = timeline.Timeline(step_stats=run_metadata.step_stats)

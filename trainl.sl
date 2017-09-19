@@ -21,7 +21,7 @@ echo "Tensorflow location"
 
 python -u -c "import tensorflow; print(tensorflow.__file__)"
 
-python tf_script_yisha.py --trace_flag=0 --epoch=2
+python tf_script_yisha.py --trace_flag=0 --epoch=20
 
 #python confusion_matrix.py
 
