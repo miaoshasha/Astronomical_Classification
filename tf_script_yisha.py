@@ -222,7 +222,7 @@ with tf.Session() as sess:
     for i in range(max_step):
         iteration_start = time.time()
         #extract batches
-        if (i+1) % 20000 != 0:
+        if (i+1) % 10000 != 0:
             x_batch = x_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             y_batch = y_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             
