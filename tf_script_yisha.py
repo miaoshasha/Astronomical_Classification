@@ -218,10 +218,11 @@ with tf.Session() as sess:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()],  options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
     else:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
+        tmp_loss = 0
     for i in range(max_step):
         iteration_start = time.time()
         #extract batches
-        if (i+1) % 5000 != 0:
+        if (i+1) % 20000 != 0:
             x_batch = x_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             y_batch = y_train[(i*batch_size)%train_size:((i+1)*batch_size)%train_size]
             
@@ -255,8 +256,8 @@ with tf.Session() as sess:
             sess.run([tf.local_variables_initializer()])
             batches_ = 0
             loss_ = 0.
-        print( "Final training Loss at max step: ", tmp_loss )
-        loss_vec.append(tmp_loss)
+    print( "training Loss at last step: ", tmp_loss )
+    loss_vec.append(tmp_loss)
             
     #compute gradients at the last step
     #gradients_input = tf.gradients(cross_entropy, y_conv)[0]
@@ -283,7 +284,7 @@ with tf.Session() as sess:
     #    print(sess.run(accuracy[0], feed_dict={x: validation_images, y: validation_labels, keep_prob: 1.}))
     #
     #print("Shapes:")
-    y_pred, y_conv_s = sess.run([predictor, tf.nn.softmax(y_conv)], feed_dict={x: test_images, keep_prob: 1.})
+    y_pred, y_conv_s, acc_test = sess.run([predictor, tf.nn.softmax(y_conv), accuracy[0]], feed_dict={x: test_images, keep_prob: 1.})
     #print(y_pred)
     #
     y_truth = test_labels[:,0].astype(np.int32,copy=True)
@@ -291,6 +292,8 @@ with tf.Session() as sess:
     #
     ##print(y_pred.shape)
     ##print(y_truth.shape)
+    
+    print( "Final Test Accuracy ML: ", acc_test)
    
     np.savetxt('truth_labels_roc.txt', y_truth)
     np.savetxt('pred_labels_roc.txt', y_pred)
