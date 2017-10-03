@@ -3,6 +3,12 @@ plt.switch_backend('agg')
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import itertools
+import sys
+
+'''
+To get the confusion matrix, please type in the command line: 
+        python confusion_matrix.py file_with_true_labels.txt file_with_predicted_labels.txt
+'''
 
 #Confusion matrix.
 def plot_confusion_matrix(cm, classes,
@@ -42,8 +48,8 @@ def plot_confusion_matrix(cm, classes,
 
 
 # Read saved true and predicted labels.
-y_truth = np.loadtxt('truth_labels_roc.txt') 
-y_pred = np.loadtxt('pred_labels_roc.txt')
+y_truth = np.loadtxt(sys.argv[1]) 
+y_pred = np.loadtxt(sys.argv[2])
 
 # Compute confusion matrix.
 cmat = confusion_matrix(y_truth, y_pred)
@@ -57,4 +63,3 @@ fig = plt.figure()
 plot_confusion_matrix(cmat, classes=class_names, normalize=True, title='Normalized confusion matrix')
 plt.show()
 fig.savefig('confusion_matrix.jpeg', dpi=120, bbox_inches='tight')
-
