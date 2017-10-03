@@ -6,18 +6,20 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import label_binarize
 from itertools import cycle
 from scipy import interp
+import sys
 
+'''
+To get the ROC curves, please type in the command line: 
+        python roc_curve.py file_with_true_labels.txt file_with_predicted_labels.txt
+'''
 n_classes = 3
 lw = 2
 
 # Read saved true and predicted labels.
-y_test_t = np.loadtxt('truth_labels_roc.txt') 
-y_score_t = np.loadtxt('pred_labels_roc.txt')
-
-
+y_test_t = np.loadtxt(sys.argv[1]) 
+y_score_t = np.loadtxt(sys.argv[2])
 
 # Binarize the output
-#y_tmp = np.zeros()
 y_test = label_binarize(y_test_t, classes=[0, 1, 2])
 y_score = label_binarize(y_score_t, classes=[0, 1, 2])
 print(y_test, y_score)
