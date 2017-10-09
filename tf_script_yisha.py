@@ -154,7 +154,7 @@ keep_prob = tf.placeholder(tf.float32)
 #variables
 hidden_dim1 = 62
 hidden_dim2 = 62
-#62-32-16-3
+#62-62-62-3
 W_fc1 = weight_variable([num_features, hidden_dim1],name="W_fc1")
 b_fc1 = bias_variable([hidden_dim1],name="b_fc1")
 W_fc2 = weight_variable([hidden_dim1, hidden_dim2],name="W_fc2")
