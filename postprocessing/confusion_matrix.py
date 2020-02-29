@@ -12,7 +12,7 @@ To get the confusion matrix, please type in the command line:
 
 #Confusion matrix.
 def plot_confusion_matrix(y_truth, y_pred,
-                          normalize=False,
+                          normalize=True,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
     """
