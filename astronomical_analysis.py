@@ -1,11 +1,16 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler, RobustScaler
+
 import tensorflow as tf
 from tensorflow import keras
+
 import tensorflow_docs as tfdocs
 import tensorflow_docs.modeling
 import tensorflow_docs.plots
-from sklearn.preprocessing import StandardScaler, RobustScaler
+import matplotlib.pyplot as plt
+
+
 
 # import data
 #data_path = "https://drive.google.com/open?id=0B6cw6JxDC2-5UVZyc3VjS2daVzg"
@@ -85,7 +90,9 @@ model = keras.Sequential([
     keras.layers.Dense(62, activation=None, kernel_regularizer=None, bias_regularizer=None),
     keras.layers.LayerNormalization(),
     keras.layers.Activation('relu'),
-    keras.layers.Dropout(0.5),
+    keras.layers.Dense(62, activation=None, kernel_regularizer=None, bias_regularizer=None),
+    keras.layers.LayerNormalization(),
+    keras.layers.Activation('relu'),
     keras.layers.Dense(62, activation=None, kernel_regularizer=None, bias_regularizer=None),
     keras.layers.LayerNormalization(),
     keras.layers.Activation('relu'),
