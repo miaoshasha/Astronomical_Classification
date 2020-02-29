@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
+import tensorflow_docs as tfdocs
+import tensorflow_docs.modeling
+import tensorflow_docs.plots
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
 # import data
@@ -87,6 +90,10 @@ model = keras.Sequential([
     keras.layers.LayerNormalization(),
     keras.layers.Activation('relu'),
     keras.layers.Dropout(0.5),
+    keras.layers.Dense(32, activation=None, kernel_regularizer=None, bias_regularizer=None),
+    keras.layers.LayerNormalization(),
+    keras.layers.Activation('relu'),
+    keras.layers.Dropout(0.5),
     keras.layers.Dense(num_features)
 ])
 
@@ -94,8 +101,12 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
+# print model summary
+model.summary()
+
 # train 
-history = model.fit(train_data, train_labels, epochs=10, verbose=1, shuffle=True, batch_size=batch_size,
+batch_size=400
+history = model.fit(train_data, train_labels, epochs=8, verbose=1, shuffle=True, batch_size=batch_size,
   callbacks=[tfdocs.modeling.EpochDots()], validation_data=(validation_data, validation_labels))
 
 # test
@@ -104,7 +115,6 @@ print('\nTest accuracy:', test_acc)
 
 
 # plot training his and follow-up analysis
-plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
+plotter = tfdocs.plots.HistoryPlotter() #smoothing_std=2
 plotter.plot({'Base': history}, metric = "accuracy")
-plt.ylim([0, 10])
 plt.ylabel('accuracy')
