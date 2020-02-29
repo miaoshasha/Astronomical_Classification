@@ -3,10 +3,12 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
 
-def getData():
+def getData(test=False):
   # import data
   #data_path = "https://drive.google.com/open?id=0B6cw6JxDC2-5UVZyc3VjS2daVzg"
   data_path = "/Users/yishasun/Documents/mls/trainingData.csv"
+  if test:
+    data_path = "/Users/yishasun/Documents/mls/trainingData_small.csv"
   df = pd.read_csv(data_path, delimiter=",", header=0)
   # shuffle
   df = df.sample(frac=1).reset_index(drop=True)
@@ -87,7 +89,6 @@ def getData():
       test_df.loc[:, "truth"].values, axis=1).astype(np.int32)
 
   # build model
-  input_data = (train_data, train_labels, validation_data,
+  input_data = (num_classes, num_features, train_data, train_labels, validation_data,
                 validation_labels, test_data, test_labels)
-  #returned_data = nn_tf_model(input_data)
   return input_data

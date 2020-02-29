@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def nn_tf_model(input_data):
-  train_data, train_labels, validation_data, validation_labels, test_data, test_labels = input_data
-  num_features = train_data.shape[-1]
+  num_classes, num_features, train_data, train_labels, validation_data, validation_labels, test_data, test_labels = input_data
   model = tf.keras.Sequential([
     tf.keras.layers.Flatten(input_shape=(num_features,)),
     tf.keras.layers.Dense(62, activation=None),
@@ -26,7 +25,7 @@ def nn_tf_model(input_data):
     tf.keras.layers.LayerNormalization(),
     tf.keras.layers.Activation('relu'),
     tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(num_features)
+    tf.keras.layers.Dense(num_classes)
   ])
   model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
