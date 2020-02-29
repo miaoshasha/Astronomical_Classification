@@ -1,27 +1,32 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
+
+import tensorflow_docs as tfdocs
+import tensorflow_docs.modeling
+import tensorflow_docs.plots
+import matplotlib.pyplot as plt
 
 
 def nn_tf_model(input_data):
   train_data, train_labels, validation_data, validation_labels, test_data, test_labels = input_data
-  model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(num_features,)),
-    keras.layers.Dense(62, activation=None),
-    keras.layers.LayerNormalization(),
-    keras.layers.Activation('relu'),
-    keras.layers.Dense(62, activation=None),
-    keras.layers.LayerNormalization(),
-    keras.layers.Activation('relu'),
-    keras.layers.Dense(62, activation=None),
-    keras.layers.LayerNormalization(),
-    keras.layers.Activation('relu'),
-    keras.layers.Dropout(0.2),
-    keras.layers.Dense(32, activation=None),
-    keras.layers.LayerNormalization(),
-    keras.layers.Activation('relu'),
-    keras.layers.Dropout(0.5),
-    keras.layers.Dense(num_features)
+  num_features = train_data.shape[-1]
+  model = tf.keras.Sequential([
+    tf.keras.layers.Flatten(input_shape=(num_features,)),
+    tf.keras.layers.Dense(62, activation=None),
+    tf.keras.layers.LayerNormalization(),
+    tf.keras.layers.Activation('relu'),
+    tf.keras.layers.Dense(62, activation=None),
+    tf.keras.layers.LayerNormalization(),
+    tf.keras.layers.Activation('relu'),
+    tf.keras.layers.Dense(62, activation=None),
+    tf.keras.layers.LayerNormalization(),
+    tf.keras.layers.Activation('relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(32, activation=None),
+    tf.keras.layers.LayerNormalization(),
+    tf.keras.layers.Activation('relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(num_features)
   ])
   model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -36,10 +41,10 @@ def nn_tf_model(input_data):
     callbacks=[tfdocs.modeling.EpochDots()], validation_data=(validation_data, validation_labels))
 
   # test
-  test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+  __, test_acc = model.evaluate(test_data,  test_labels, verbose=2)
   print('\nTest accuracy:', test_acc)
   
   probability_model = tf.keras.Sequential([model, 
-                                         keras.layers.Softmax()])
-  predictions = probability_model.predict(test_images)
+                                         tf.keras.layers.Softmax()])
+  predictions = probability_model.predict(test_data)
   return (test_acc, predictions, history)
