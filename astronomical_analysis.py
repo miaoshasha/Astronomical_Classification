@@ -95,15 +95,16 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # train 
-model.fit(train_data, train_labels, epochs=10)
-
-# validation
-validation_loss, validation_acc = model.evaluate(validation_data,  validation_labels, verbose=2)
-print('\nTest accuracy:', validation_acc)
+history = model.fit(train_data, train_labels, epochs=10, verbose=1, shuffle=True, batch_size=batch_size,
+  callbacks=[tfdocs.modeling.EpochDots()], validation_data=(validation_data, validation_labels))
 
 # test
-#test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
-#print('\nTest accuracy:', test_acc)
+test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+print('\nTest accuracy:', test_acc)
 
 
 # plot training his and follow-up analysis
+plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
+plotter.plot({'Base': history}, metric = "accuracy")
+plt.ylim([0, 10])
+plt.ylabel('accuracy')
